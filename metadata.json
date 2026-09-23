@@ -1,0 +1,6 @@
+{
+  "name": "Stillpoint",
+  "description": "A thoughtful guide, planner, and administrator directory for spiritual centre destinations and multi-session operating availability.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
