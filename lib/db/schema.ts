@@ -1,4 +1,4 @@
-import { pgTable, varchar, text, integer, boolean, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, varchar, text, integer, boolean, timestamp, doublePrecision } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 
 export const destinationsTable = pgTable('destinations', {
@@ -12,6 +12,9 @@ export const destinationsTable = pgTable('destinations', {
   tone: varchar('tone', { length: 50 }).notNull().default('sage'),
   iconName: varchar('icon_name', { length: 50 }).notNull().default('Compass'),
   priority: integer('priority').notNull().default(3),
+  latitude: doublePrecision('latitude'),
+  longitude: doublePrecision('longitude'),
+  googleMapsUrl: text('google_maps_url'),
   displayOrder: integer('display_order').notNull().default(0),
   isInRoute: boolean('is_in_route').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),

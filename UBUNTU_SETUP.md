@@ -32,6 +32,18 @@ psql --version
 
 ## 2. Set Up Local PostgreSQL
 
+You can either run PostgreSQL locally using Docker (fastest) or native `systemd` service:
+
+### Option A: Using Docker Compose (Quickest)
+```bash
+# Starts PostgreSQL 16 and automatically runs schema.sql and seed.sql
+docker compose up -d
+
+# Check container status:
+docker compose ps
+```
+
+### Option B: Using Native Ubuntu PostgreSQL Service
 Ensure the PostgreSQL service is active:
 
 ```bash
@@ -41,8 +53,6 @@ sudo systemctl status postgresql
 ```
 
 ### Create a Database User and Database
-Switch to the postgres superuser or create your user:
-
 ```bash
 # Switch to postgres user
 sudo -u postgres psql
@@ -58,19 +68,21 @@ GRANT ALL PRIVILEGES ON DATABASE stillpoint TO stillpoint_user;
 
 ## 3. Import Schema & Seed Data
 
-The project includes two SQL files and an automated import script:
-- `schema.sql`: DDL statements defining the `destinations` and `destination_availabilities` tables, indexes, constraints, and column definitions (including `priority`, `latitude`, `longitude`, and `google_maps_url`).
-- `seed.sql`: Complete seed data with all 9 sacred destinations, coordinates, Google Maps navigation links, and recurring 24-hr operating slots.
+The project includes SQL migration files and an automated import script:
+- `schema.sql`: DDL statements defining the `destinations` and `destination_availabilities` tables, indexes, constraints, foreign keys, coordinates (`latitude`, `longitude`), and navigation URLs.
+- `seed.sql`: Complete seed data containing all 10 sacred destinations (including Biksha Hall, Surya Kund, Dhyanalinga, Adiyogi Alayam, Spanda Hall, Sadhguru Sannidhi, Isha Café, and Campus Night Time Silence), plus all recurring 24-hr availability slots.
 - `import-data.sh`: Automated bash import script.
 
-### Method A: Using the Automated Bash Script (Recommended)
-
-Make sure the script is executable and run it:
+### Method A: Using npm script / Automated Bash Script (Recommended)
 
 ```bash
+# Make script executable
 chmod +x import-data.sh
 
-# Run with custom database credentials:
+# Run via npm shortcut:
+npm run db:import
+
+# Or run with custom credentials:
 PGHOST=localhost \
 PGPORT=5432 \
 PGUSER=stillpoint_user \
@@ -94,7 +106,7 @@ psql -h localhost -U stillpoint_user -d stillpoint -f schema.sql
 psql -h localhost -U stillpoint_user -d stillpoint -f seed.sql
 
 # 3. Verify
-psql -h localhost -U stillpoint_user -d stillpoint -c "SELECT title, priority, latitude, longitude, google_maps_url FROM destinations ORDER BY display_order;"
+psql -h localhost -U stillpoint_user -d stillpoint -c "SELECT id, title, priority, latitude, longitude, google_maps_url FROM destinations ORDER BY display_order;"
 ```
 
 ---
@@ -115,8 +127,8 @@ cp .env.example .env.local
 ```
 
 > **Note on Gemini AI:**
-> - If `GEMINI_API_KEY` is set, the app uses **Gemini 3.1 Flash Lite** with your custom instructions from `GEMINI_INSTRUCTIONS.md` to compose personalized, contemplative rhythms.
-> - If `GEMINI_API_KEY` is omitted, the app automatically falls back to its built-in deterministic PostgreSQL scheduling engine, so the application continues to run seamlessly.
+> - If `GEMINI_API_KEY` is set, the app uses **Gemini 3.5 Flash** (with resilient multi-tier auto-failover to other Gemini models) and your custom instructions from `GEMINI_INSTRUCTIONS.md` to compose personalized, contemplative rhythms.
+> - If `GEMINI_API_KEY` is omitted or all AI models are at high demand capacity, the app automatically falls back to its built-in deterministic relational scheduling engine, so the application continues to run seamlessly.
 
 ```bash
 # 3. Check TypeScript validation

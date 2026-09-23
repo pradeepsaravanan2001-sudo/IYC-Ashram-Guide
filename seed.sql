@@ -78,6 +78,23 @@ INSERT INTO destinations (
     true
 ),
 (
+    '5',
+    'Biksha Hall',
+    'Ashram dining',
+    '10:00 AM',
+    '45 min',
+    '6 min walk',
+    'Traditional ashram dining hall serving nourishing yogic vegetarian brunch and dinner in mindful silence.',
+    'clay',
+    'Utensils',
+    4,
+    10.977150,
+    76.736800,
+    'https://maps.google.com/?q=10.977150,76.736800',
+    5,
+    true
+),
+(
     '101',
     'Surya Kund',
     'Water body',
@@ -91,7 +108,7 @@ INSERT INTO destinations (
     10.977430,
     76.735820,
     'https://maps.google.com/?q=10.977430,76.735820',
-    5,
+    6,
     false
 ),
 (
@@ -108,7 +125,7 @@ INSERT INTO destinations (
     10.977780,
     76.734520,
     'https://maps.google.com/?q=10.977780,76.734520',
-    6,
+    7,
     false
 ),
 (
@@ -125,7 +142,7 @@ INSERT INTO destinations (
     10.979210,
     76.736050,
     'https://maps.google.com/?q=10.979210,76.736050',
-    7,
+    8,
     false
 ),
 (
@@ -142,7 +159,7 @@ INSERT INTO destinations (
     10.972416,
     76.740602,
     'https://maps.google.com/?q=10.972416,76.740602',
-    8,
+    9,
     false
 ),
 (
@@ -159,7 +176,7 @@ INSERT INTO destinations (
     10.977500,
     76.736000,
     'https://maps.google.com/?q=10.977500,76.736000',
-    9,
+    10,
     true
 )
 ON CONFLICT (id) DO UPDATE SET
@@ -204,6 +221,10 @@ INSERT INTO destination_availabilities (
 ('avail-4-1', '4', '07:30', '10:30', 'Wholesome Breakfast & Herbal Teas', 'open', 'daily'),
 ('avail-4-2', '4', '12:00', '15:30', 'Mindful Vegetarian Lunch Service', 'open', 'daily'),
 ('avail-4-3', '4', '17:00', '20:00', 'Evening Light Refreshments & Dinner', 'open', 'daily'),
+
+-- Biksha Hall (id: '5')
+('avail-5-1', '5', '10:00', '11:30', 'Morning Yogic Brunch (in silence)', 'open', 'daily'),
+('avail-5-2', '5', '18:45', '20:15', 'Evening Yogic Dinner (in silence)', 'open', 'daily'),
 
 -- Surya Kund (id: '101')
 ('avail-101-1', '101', '06:30', '11:30', 'Morning Theerthakund Dip', 'open', 'daily'),
