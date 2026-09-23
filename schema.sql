@@ -1,10 +1,7 @@
 -- ==========================================================
 -- STILLPOINT SPIRITUAL CENTRE - POSTGRESQL DATA MODEL DDL
--- Compatible with PostgreSQL 14, 15, 16, 17, Cloud SQL, Neon, Supabase, RDS
+-- Compatible with PostgreSQL 14, 15, 16, 17, Cloud SQL, Neon, Supabase, RDS, PGlite
 -- ==========================================================
-
--- Enable UUID extension if needed
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- 1. DESTINATIONS TABLE
 -- Stores sacred spaces, halls, arrival pavilions, and gardens

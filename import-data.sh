@@ -32,27 +32,28 @@ echo "Schema File     : ${SCHEMA_FILE}"
 echo "Seed Data File  : ${SEED_FILE}"
 echo "----------------------------------------------------------"
 
-# Verify psql is installed
+# Step 1: Seed local embedded PostgreSQL engine for Next.js app
+echo "1️⃣  Seeding local application database..."
+node "${SCRIPT_DIR}/scripts/seed.mjs"
+
+# Step 2: Check if psql client is installed for external/system PostgreSQL
+echo ""
+echo "2️⃣  Checking for native PostgreSQL server..."
 if ! command -v psql &> /dev/null; then
-    echo "❌ Error: 'psql' client is not installed or not in PATH."
-    echo "To install on Ubuntu:"
-    echo "    sudo apt-get update && sudo apt-get install -y postgresql-client"
-    exit 1
+    echo "ℹ️  'psql' client is not installed. Application local database is already seeded and ready!"
+    echo "To install psql on Ubuntu: sudo apt-get install -y postgresql-client"
+    exit 0
 fi
 
-# Verify schema and seed files exist
-if [ ! -f "${SCHEMA_FILE}" ]; then
-    echo "❌ Error: schema file '${SCHEMA_FILE}' not found."
-    exit 1
+# Step 3: Check if PostgreSQL server is reachable
+if ! psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" -c '\q' 2>/dev/null; then
+    echo "ℹ️  Cannot reach external PostgreSQL server at ${DB_HOST}:${DB_PORT} (User: ${DB_USER})."
+    echo "   Application local database is already seeded and fully ready for 'npm run dev'!"
+    exit 0
 fi
 
-if [ ! -f "${SEED_FILE}" ]; then
-    echo "❌ Error: seed file '${SEED_FILE}' not found."
-    exit 1
-fi
-
-# Step 1: Create database if it does not already exist
-echo "1️⃣  Checking if database '${DB_NAME}' exists..."
+# Step 4: Create database if it does not already exist
+echo "3️⃣  Checking if external database '${DB_NAME}' exists..."
 if psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" -lqt | cut -d \| -f 1 | grep -qw "${DB_NAME}"; then
     echo "   Database '${DB_NAME}' already exists."
 else
@@ -61,18 +62,18 @@ else
     echo "   ✅ Database '${DB_NAME}' created."
 fi
 
-# Step 2: Execute DDL schema
-echo "2️⃣  Applying DDL schema (tables, indices, columns)..."
+# Step 5: Execute DDL schema
+echo "4️⃣  Applying DDL schema (schema.sql)..."
 psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" -d "${DB_NAME}" -f "${SCHEMA_FILE}"
 echo "   ✅ Schema applied successfully."
 
-# Step 3: Insert seed records
-echo "3️⃣  Importing Stillpoint sacred destinations and availability slots..."
+# Step 6: Insert seed records
+echo "5️⃣  Importing Stillpoint sacred destinations and availability slots (seed.sql)..."
 psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" -d "${DB_NAME}" -f "${SEED_FILE}"
 echo "   ✅ Seed records imported successfully."
 
-# Step 4: Verification summary
-echo "4️⃣  Verifying imported records..."
+# Step 7: Verification summary
+echo "6️⃣  Verifying imported records..."
 psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" -d "${DB_NAME}" -c "
 SELECT 
     (SELECT count(*) FROM destinations) AS total_destinations,

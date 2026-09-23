@@ -73,13 +73,21 @@ The project includes SQL migration files and an automated import script:
 - `seed.sql`: Complete seed data containing all 10 sacred destinations (including Biksha Hall, Surya Kund, Dhyanalinga, Adiyogi Alayam, Spanda Hall, Sadhguru Sannidhi, Isha Café, and Campus Night Time Silence), plus all recurring 24-hr availability slots.
 - `import-data.sh`: Automated bash import script.
 
-### Method A: Using npm script / Automated Bash Script (Recommended)
+### Method A: Using Node.js Seeder (Simplest & Direct)
+
+Seeds the application database directly with all 10 sacred destinations and 23 recurring operating slots without needing any system tools:
+
+```bash
+npm run db:seed
+```
+
+### Method B: Using the Automated Bash Script
 
 ```bash
 # Make script executable
 chmod +x import-data.sh
 
-# Run via npm shortcut:
+# Run via npm shortcut (seeds local DB and any running PostgreSQL instance):
 npm run db:import
 
 # Or run with custom credentials:

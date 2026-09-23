@@ -531,25 +531,13 @@ async function initializePostgresDatabase(client: PGlite) {
 
     CREATE INDEX IF NOT EXISTS idx_availabilities_destination ON destination_availabilities (destination_id);
     CREATE INDEX IF NOT EXISTS idx_availabilities_start_time ON destination_availabilities (start_time ASC);
-
-    INSERT INTO destinations (id, title, type, time, duration, distance, description, tone, icon_name, priority, latitude, longitude, google_maps_url, display_order, is_in_route)
-    VALUES ('5', 'Biksha Hall', 'Ashram dining', '10:00 AM', '45 min', '6 min walk', 'Traditional ashram dining hall serving nourishing yogic vegetarian brunch and dinner in mindful silence.', 'clay', 'Utensils', 4, 10.97715, 76.73680, 'https://maps.google.com/?q=10.977150,76.736800', 5, true)
-    ON CONFLICT (id) DO NOTHING;
-
-    INSERT INTO destination_availabilities (id, destination_id, start_time, end_time, label, status, recurrence)
-    VALUES ('avail-5-1', '5', '10:00', '11:30', 'Morning Yogic Brunch (in silence)', 'open', 'daily')
-    ON CONFLICT (id) DO NOTHING;
-
-    INSERT INTO destination_availabilities (id, destination_id, start_time, end_time, label, status, recurrence)
-    VALUES ('avail-5-2', '5', '18:45', '20:15', 'Evening Yogic Dinner (in silence)', 'open', 'daily')
-    ON CONFLICT (id) DO NOTHING;
   `)
 
-  // 2. Check if seeding is needed
+  // 2. Check if seeding is needed (all 10 core destinations must be present)
   const countCheck = await client.query<{ count: string }>('SELECT count(*) AS count FROM destinations;')
   const count = parseInt(countCheck.rows[0]?.count || '0', 10)
 
-  if (count === 0) {
+  if (count < 10) {
     await seedPostgresDatabase(client)
   }
 }
@@ -567,15 +555,27 @@ export async function seedPostgresDatabase(client?: PGlite): Promise<void> {
 
   await pg.query('BEGIN;')
   try {
-    // Clear existing
-    await pg.query('DELETE FROM destination_availabilities;')
-    await pg.query('DELETE FROM destinations;')
-
-    // Seed destinations
+    // Seed destinations with ON CONFLICT so existing custom records are preserved
     for (const d of initialDestinationsData) {
       await pg.query(
         `INSERT INTO destinations (id, title, type, time, duration, distance, description, tone, icon_name, priority, latitude, longitude, google_maps_url, display_order, is_in_route)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);`,
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+         ON CONFLICT (id) DO UPDATE SET
+           title = EXCLUDED.title,
+           type = EXCLUDED.type,
+           time = EXCLUDED.time,
+           duration = EXCLUDED.duration,
+           distance = EXCLUDED.distance,
+           description = EXCLUDED.description,
+           tone = EXCLUDED.tone,
+           icon_name = EXCLUDED.icon_name,
+           priority = EXCLUDED.priority,
+           latitude = EXCLUDED.latitude,
+           longitude = EXCLUDED.longitude,
+           google_maps_url = EXCLUDED.google_maps_url,
+           display_order = EXCLUDED.display_order,
+           is_in_route = EXCLUDED.is_in_route,
+           updated_at = CURRENT_TIMESTAMP;`,
         [
           d.id,
           d.title,
@@ -596,17 +596,25 @@ export async function seedPostgresDatabase(client?: PGlite): Promise<void> {
       )
     }
 
-    // Seed availabilities
+    // Seed availabilities with ON CONFLICT
     for (const a of initialAvailabilityData) {
       await pg.query(
         `INSERT INTO destination_availabilities (id, destination_id, start_time, end_time, label, status, recurrence)
-         VALUES ($1, $2, $3, $4, $5, $6, $7);`,
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
+         ON CONFLICT (id) DO UPDATE SET
+           destination_id = EXCLUDED.destination_id,
+           start_time = EXCLUDED.start_time,
+           end_time = EXCLUDED.end_time,
+           label = EXCLUDED.label,
+           status = EXCLUDED.status,
+           recurrence = EXCLUDED.recurrence,
+           updated_at = CURRENT_TIMESTAMP;`,
         [a.id, a.destinationId, a.startTime, a.endTime, a.label, a.status, a.recurrence]
       )
     }
 
     await pg.query('COMMIT;')
-    console.log('PostgreSQL seeded successfully!')
+    console.log('PostgreSQL seeded/synced successfully with all destinations and slots!')
   } catch (err) {
     await pg.query('ROLLBACK;')
     console.error('PostgreSQL seed failed:', err)

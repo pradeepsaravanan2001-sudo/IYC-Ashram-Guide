@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "tsc --noEmit",
+    "db:seed": "node scripts/seed.mjs",
     "db:import": "bash import-data.sh"
   },
   "dependencies": {
